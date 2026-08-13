@@ -42,7 +42,8 @@ the acceptance criteria, and retained evidence for the final conclusions.
 | `local-agent-gateway/` | Security boundary and OpenAI-compatible proxy |
 | `Open-LLM-VTuber/` | Upstream-based voice/Live2D client used for integration |
 | `evidence/` | Environment audits, benchmarks, reports, and screenshots |
-| `praktikum_codex_gateway_ru_v2.pdf` | Final Russian operator practicum |
+| `docs/praktikum_codex_hermes_full_windows_macos_ru_v3.pdf` | Full 77-page Russian practicum (PDF) |
+| `docs/praktikum_codex_hermes_full_windows_macos_ru_v3.docx` | Editable practicum source (DOCX) |
 
 The two codebases are Git submodules. Clone them together:
 
@@ -98,3 +99,14 @@ in the report.
 ## Results
 
 The lab produced a working, documented path from a voice AI interface to a
+local or hosted language model. The deliverables include a tested security
+gateway, repeatable environment and model audits, a 15-experiment practicum,
+cross-platform Windows/macOS commands, end-to-end smoke tests, rollback
+procedures, fault injection, and a definition of done.
+
+## Portfolio links
+
+- [Full practicum (PDF)](docs/praktikum_codex_hermes_full_windows_macos_ru_v3.pdf)
+- [Editable practicum (DOCX)](docs/praktikum_codex_hermes_full_windows_macos_ru_v3.docx)
+- [Local Agent Gateway](https://github.com/aka-gst/local-agent-gateway)
+- [GitHub profile](https://github.com/aka-gst)
