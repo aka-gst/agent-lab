@@ -1,0 +1,99 @@
+Open-LLM-VTuber — read-only обзор репозитория
+
+Проверка выполнена строго в read-only режиме. conf.yaml, секреты, логи,
+backup-файлы и исключённые каталоги не читались.
+
+1. Краткое релевантное дерево
+
+Open-LLM-VTuber/
+|-- README.md
+|-- CLAUDE.md
+|-- pyproject.toml
+|-- run_server.py
+|-- conf.yaml                  # пользовательская конфигурация
+|-- config_templates/          # исходные шаблоны
+|-- doc/                       # ссылка на документацию, legacy samples
+|-- frontend/                  # Git submodule, собранный web-клиент
+`-- src/open_llm_vtuber/
+    |-- server.py
+    |-- config_manager/        # схема и проверка конфигурации
+    |-- agent/
+    |   |-- agents/
+    |   `-- stateless_llm/     # LLM-реализации
+    |-- asr/                   # ASR-реализации
+    |-- tts/                   # TTS-реализации
+    |-- conversations/
+    |-- mcpp/
+    |-- live/
+    |-- translate/
+    |-- utils/
+    `-- vad/
+
+Расположение основных компонентов: CLAUDE.md:109.
+Модульная структура: CLAUDE.md:46.
+
+2. Главная серверная точка входа
+
+Исполняемая точка входа — run_server.py:167. Она импортирует WebSocketServer
+на строке 13, создаёт сервер на строке 146 и запускает Uvicorn на строках
+157–164.
+
+Основная серверная реализация — src/open_llm_vtuber/server.py:56. Класс
+WebSocketServer создаёт FastAPI-приложение на строке 75.
+
+3. Команда запуска сервера
+
+uv run run_server.py
+
+Подтверждение: CLAUDE.md:13. Для подробного логирования:
+uv run run_server.py --verbose (CLAUDE.md:14).
+
+4. Пользовательский conf.yaml
+
+C:\dev\agent-lab\Open-LLM-VTuber\conf.yaml
+
+Расположение указано в CLAUDE.md:22. Точка входа загружает корневой conf.yaml
+в run_server.py:138. Шаблон копируется из config_templates/conf.default.yaml
+в корень под именем conf.yaml: config_templates/README.md:4.
+
+5. Схема конфигурации
+
+Типизированная схема находится в src/open_llm_vtuber/config_manager/.
+Это Pydantic-модели с загрузкой и валидацией YAML: CLAUDE.md:67.
+
+Корневая модель Config: src/open_llm_vtuber/config_manager/main.py:11.
+Вложение Agent, ASR и TTS: src/open_llm_vtuber/config_manager/character.py:23.
+
+6. ASR, TTS и LLM
+
+- ASR: src/open_llm_vtuber/asr/; фабрика — asr/asr_factory.py:5;
+  документация — CLAUDE.md:55.
+- TTS: src/open_llm_vtuber/tts/; фабрика — tts/tts_factory.py:5;
+  документация — CLAUDE.md:59.
+- LLM: src/open_llm_vtuber/agent/stateless_llm/; фабрика —
+  agent/stateless_llm_factory.py:14; провайдеры схемы начинаются в
+  config_manager/stateless_llm.py:232.
+
+7. Frontend и тесты
+
+Frontend находится в frontend/ и является Git submodule: .gitmodules:1.
+Сервер монтирует его как статический catch-all в server.py:144.
+
+Каталог tests/ и файлы test_* в разрешённой области отсутствуют.
+Репозиторная инструкция упоминает ручное тестирование через web-интерфейс
+и desktop-клиент: CLAUDE.md:142.
+
+8. Что нельзя менять при воспроизведении upstream baseline
+
+- frontend/ — внешний submodule, его нельзя править непосредственно:
+  run_server.py:94–97.
+- config_templates/conf.default.yaml и config_templates/conf.ZH.default.yaml —
+  upstream-шаблоны; их не следует менять вне вклада в проект:
+  config_templates/README.md:4–6.
+- requirements.txt помечен как автоматически генерируемый, поэтому вручную
+  его менять не следует: CLAUDE.md:150–155.
+- Пользовательские отклонения следует держать в корневом conf.yaml, который
+  обозначен пользовательской конфигурацией: CLAUDE.md:23.
+
+Финальный git status --short завершился с кодом 0 и не вывел ни одной строки.
+Рабочее дерево было чистым; во время проверки ничего не изменено.

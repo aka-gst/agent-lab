@@ -1,0 +1,600 @@
+{
+  "date": "2026-07-29",
+  "generated_at": "2026-07-29T20:39:49.232546+00:00",
+  "resolved_candidates": {
+    "Laguna XS 2.1": "poolside/laguna-xs-2.1:free",
+    "Laguna M.1": null,
+    "North Mini Code": "cohere/north-mini-code:free"
+  },
+  "unavailable": [
+    "Laguna M.1"
+  ],
+  "prompts": [
+    {
+      "id": "plan",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Create a concise implementation plan for adding a health-check endpoint to a Python FastAPI service. Include validation and rollback. Do not use tools."
+        }
+      ],
+      "tools": null
+    },
+    {
+      "id": "single_tool",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Use the available tool to get Moscow weather in celsius. Do not guess and do not answer without a tool call."
+        }
+      ],
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "description": "Return current weather for a city.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "city": {
+                  "type": "string"
+                },
+                "units": {
+                  "type": "string",
+                  "enum": [
+                    "celsius",
+                    "fahrenheit"
+                  ]
+                }
+              },
+              "required": [
+                "city",
+                "units"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "calculator",
+            "description": "Evaluate a basic arithmetic expression.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "expression": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "expression"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "expected_tool": "get_weather",
+      "expected_arguments": {
+        "city": "Moscow",
+        "units": "celsius"
+      }
+    },
+    {
+      "id": "tool_choice",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Use the correct available tool to calculate (37 * 19) + 8."
+        }
+      ],
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "description": "Return current weather for a city.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "city": {
+                  "type": "string"
+                },
+                "units": {
+                  "type": "string",
+                  "enum": [
+                    "celsius",
+                    "fahrenheit"
+                  ]
+                }
+              },
+              "required": [
+                "city",
+                "units"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        {
+          "type": "function",
+          "function": {
+            "name": "calculator",
+            "description": "Evaluate a basic arithmetic expression.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "expression": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "expression"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      ],
+      "expected_tool": "calculator"
+    }
+  ],
+  "raw_results": {
+    "poolside/laguna-xs-2.1:free": [
+      {
+        "repeat": 1,
+        "prompt_id": "plan",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 21671.8,
+        "finish_reason": "length",
+        "content": null,
+        "tool_calls": [],
+        "usage": {
+          "prompt_tokens": 69,
+          "completion_tokens": 500,
+          "total_tokens": 569,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 32,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 500,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": false
+        },
+        "plan_score": {
+          "score": 0,
+          "max": 4,
+          "checks": {
+            "implementation_steps": false,
+            "validation": false,
+            "rollback": false,
+            "concise_structure": false
+          }
+        }
+      },
+      {
+        "repeat": 1,
+        "prompt_id": "single_tool",
+        "ok": false,
+        "status": 429,
+        "latency_ms": 532.8,
+        "error": "{'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'poolside/laguna-xs-2.1:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Poolside', 'is_byok': False, 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing'}}, 'user_id': 'user_3GsQFsqklCWxaKTeA3p1mWXPHGY'}",
+        "tool_score": {
+          "applicable": true,
+          "success": false,
+          "reason": "no tool call"
+        }
+      },
+      {
+        "repeat": 1,
+        "prompt_id": "tool_choice",
+        "ok": false,
+        "status": 429,
+        "latency_ms": 673.8,
+        "error": "{'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'poolside/laguna-xs-2.1:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Poolside', 'is_byok': False, 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing'}}, 'user_id': 'user_3GsQFsqklCWxaKTeA3p1mWXPHGY'}",
+        "tool_score": {
+          "applicable": true,
+          "success": false,
+          "reason": "no tool call"
+        }
+      }
+    ],
+    "cohere/north-mini-code:free": [
+      {
+        "repeat": 1,
+        "prompt_id": "plan",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 23995.0,
+        "finish_reason": "length",
+        "content": "**Implementation Plan – Health‑Check Endpoint for FastAPI Service**\n\n---\n\n### 1. Goal\n* Expose a `/health` (or `/healthz`) GET endpoint that reports the overall readiness of the service.\n* Validate critical dependencies (database, cache, external APIs, etc.).\n* Provide a safe rollback mechanism if a dependency check fails (e.g., revert to a last‑known‑good state or return a degraded‑mode response).\n\n---\n\n### 2. Design Decisions\n| Item | Choice |\n|------|--------|\n| **Endpoint** | `GET /health` |\n| **Response format** | JSON: `{\"status\": \"healthy|degraded|unhealthy\", \"details\": {...}}` |\n| **HTTP codes** | `200` for `healthy`/`degraded`, `503` for `unhealthy` |\n| **Validation strategy** | Synchronous checks (fast) + optional async background checks |\n| **Rollback** | If a check fails, revert to a cached “last‑good” configuration or fall back to a read‑only mode. |\n\n---\n\n### 3. Implementation Steps\n\n#### 3.1. Define Health‑Check Models\n```python\nfrom pydantic import BaseModel\nfrom typing import Dict, Literal\n\nclass HealthStatus(str, Literal[\"healthy\", \"degraded\", \"unhealthy\"]):\n    pass\n\nclass HealthResponse(BaseModel):\n    status: HealthStatus\n    details: Dict[str, bool]   # e.g., {\"database\": true, \"cache\": false}\n```\n\n#### 3.2. Create a Health‑Check Service\n```python\n# health_service.py\nfrom typing import Dict\nimport asyncpg\nimport redis.asyncio as redis",
+        "tool_calls": [],
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 497,
+          "total_tokens": 525,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 183,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": false
+        },
+        "plan_score": {
+          "score": 4,
+          "max": 4,
+          "checks": {
+            "implementation_steps": true,
+            "validation": true,
+            "rollback": true,
+            "concise_structure": true
+          }
+        }
+      },
+      {
+        "repeat": 1,
+        "prompt_id": "single_tool",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 2839.3,
+        "finish_reason": "tool_calls",
+        "content": null,
+        "tool_calls": [
+          {
+            "type": "function",
+            "index": 0,
+            "id": "get_weather_pqqkpjfx6807",
+            "function": {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Moscow\", \"units\": \"celsius\"}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 102,
+          "completion_tokens": 61,
+          "total_tokens": 163,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 53,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": true,
+          "success": true,
+          "name_ok": true,
+          "arguments_json_ok": true,
+          "expected_arguments_ok": true
+        }
+      },
+      {
+        "repeat": 1,
+        "prompt_id": "tool_choice",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 2534.1,
+        "finish_reason": "tool_calls",
+        "content": null,
+        "tool_calls": [
+          {
+            "type": "function",
+            "index": 0,
+            "id": "calculator_3165jrhj30nr",
+            "function": {
+              "name": "calculator",
+              "arguments": "{\"expression\": \"(37 * 19) + 8\"}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 96,
+          "completion_tokens": 63,
+          "total_tokens": 159,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 51,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": true,
+          "success": true,
+          "name_ok": true,
+          "arguments_json_ok": true,
+          "expected_arguments_ok": true
+        }
+      },
+      {
+        "repeat": 2,
+        "prompt_id": "plan",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 22234.0,
+        "finish_reason": "length",
+        "content": "**Implementation Plan – Health‑Check Endpoint (FastAPI)**  \n\n---\n\n### 1. Design\n| Aspect | Decision |\n|--------|----------|\n| **Endpoint** | `GET /health` (or `GET /healthz`) |\n| **Response** | JSON with status (`ok`/`degraded`) and optional details (e.g., DB latency, external services). |\n| **Validation** | Use a Pydantic model to shape the response and enforce schema. |\n| **Rollback** | If any health‑check dependency fails, return a “degraded” status without raising a 5xx error; keep the service alive. |\n| **Logging** | Structured logs (e.g., `logger.info(\"health check passed\")`) for monitoring. |\n\n---\n\n### 2. Implementation Steps\n\n1. **Create a Pydantic model** (`models/health.py`)  \n   ```python\n   from pydantic import BaseModel\n   from typing import Dict, Any\n   from datetime import datetime\n\n   class HealthResponse(BaseModel):\n       status: str               # \"ok\" | \"degraded\"\n       timestamp: datetime\n       details: Dict[str, Any] = {}\n   ```\n\n2. **Add the endpoint** (`api/v1/health.py`)  \n   ```python\n   from fastapi import APIRouter, HTTPException\n   from fastapi.responses import JSONResponse\n   from .models import HealthResponse\n   import logging\n   import asyncio\n\n   router = APIRouter()\n   logger = logging.getLogger(__name__)\n\n   async def check_database() -> bool:\n       # Replace with real DB ping (e.g., async session.execute(text(\"SELECT 1\")))\n       try:\n           # await db_ping()",
+        "tool_calls": [],
+        "usage": {
+          "prompt_tokens": 28,
+          "completion_tokens": 497,
+          "total_tokens": 525,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 191,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": false
+        },
+        "plan_score": {
+          "score": 3,
+          "max": 4,
+          "checks": {
+            "implementation_steps": true,
+            "validation": false,
+            "rollback": true,
+            "concise_structure": true
+          }
+        }
+      },
+      {
+        "repeat": 2,
+        "prompt_id": "single_tool",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 3197.0,
+        "finish_reason": "tool_calls",
+        "content": null,
+        "tool_calls": [
+          {
+            "type": "function",
+            "index": 0,
+            "id": "get_weather_nbat8vwpfn6p",
+            "function": {
+              "name": "get_weather",
+              "arguments": "{\"city\": \"Moscow\", \"units\": \"celsius\"}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 102,
+          "completion_tokens": 61,
+          "total_tokens": 163,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 53,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": true,
+          "success": true,
+          "name_ok": true,
+          "arguments_json_ok": true,
+          "expected_arguments_ok": true
+        }
+      },
+      {
+        "repeat": 2,
+        "prompt_id": "tool_choice",
+        "ok": true,
+        "status": 200,
+        "latency_ms": 2284.8,
+        "finish_reason": "tool_calls",
+        "content": null,
+        "tool_calls": [
+          {
+            "type": "function",
+            "index": 0,
+            "id": "calculator_yhph81fck33b",
+            "function": {
+              "name": "calculator",
+              "arguments": "{\"expression\": \"(37 * 19) + 8\"}"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 96,
+          "completion_tokens": 63,
+          "total_tokens": 159,
+          "cost": 0,
+          "is_byok": false,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "cache_write_tokens": 0,
+            "audio_tokens": 0,
+            "video_tokens": 0
+          },
+          "cost_details": {
+            "upstream_inference_cost": 0,
+            "upstream_inference_prompt_cost": 0,
+            "upstream_inference_completions_cost": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 51,
+            "image_tokens": 0,
+            "audio_tokens": 0
+          }
+        },
+        "tool_score": {
+          "applicable": true,
+          "success": true,
+          "name_ok": true,
+          "arguments_json_ok": true,
+          "expected_arguments_ok": true
+        }
+      }
+    ]
+  },
+  "summary": {
+    "poolside/laguna-xs-2.1:free": {
+      "requests": 3,
+      "successes": 1,
+      "tool_successes": 0,
+      "tool_attempts": 2,
+      "median_latency_ms": 21671.8,
+      "mean_plan_score": 0,
+      "http_429": 2,
+      "http_5xx": 0
+    },
+    "cohere/north-mini-code:free": {
+      "requests": 6,
+      "successes": 6,
+      "tool_successes": 4,
+      "tool_attempts": 4,
+      "median_latency_ms": 3018.2,
+      "mean_plan_score": 3.5,
+      "http_429": 0,
+      "http_5xx": 0
+    }
+  },
+  "vision": {
+    "google/gemma-4-26b-a4b-it:free": {
+      "ok": true,
+      "status": 200,
+      "latency_ms": 2785.6,
+      "finish_reason": "stop",
+      "content": "Black",
+      "tool_calls": [],
+      "usage": {
+        "prompt_tokens": 307,
+        "completion_tokens": 2,
+        "total_tokens": 309,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 9.54e-06,
+          "upstream_inference_prompt_cost": 9.21e-06,
+          "upstream_inference_completions_cost": 3.3e-07
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "vision_success": false
+    },
+    "google/gemma-4-31b-it:free": {
+      "ok": false,
+      "status": 429,
+      "latency_ms": 474.6,
+      "error": "{'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'google/gemma-4-31b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Google AI Studio', 'is_byok': False, 'provider_error_code': '429', 'limit_source': 'upstream_provider_shared_pool', 'remedy_hint': 'Retry shortly, add your own provider key (https://openrouter.ai/settings/integrations), or route to another provider with provider routing: https://openrouter.ai/docs/features/provider-routing'}}, 'user_id': 'user_3GsQFsqklCWxaKTeA3p1mWXPHGY'}",
+      "vision_success": false
+    },
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+      "ok": true,
+      "status": 200,
+      "latency_ms": 651.3,
+      "finish_reason": null,
+      "content": null,
+      "tool_calls": [],
+      "usage": null,
+      "vision_success": false
+    },
+    "nvidia/nemotron-nano-12b-v2-vl:free": {
+      "ok": false,
+      "status": 502,
+      "latency_ms": 1143.2,
+      "error": "{'error': {'message': 'Provider returned error', 'code': 502, 'metadata': {'raw': '{\"error\":{\"message\":\"broken data stream when reading image file\",\"type\":\"Internal Server Error\",\"param\":null,\"code\":500}}', 'provider_name': 'Nvidia', 'is_byok': False, 'provider_error_code': '500'}}, 'user_id': 'user_3GsQFsqklCWxaKTeA3p1mWXPHGY'}",
+      "vision_success": false
+    }
+  },
+  "routes": {
+    "default": "cohere/north-mini-code:free",
+    "fallback": null,
+    "vision": null,
+    "rule": "tool success rate, then plan score, then median latency; zero 429/5xx required"
+  }
+}

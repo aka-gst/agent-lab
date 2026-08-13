@@ -1,0 +1,8 @@
+[submodule "local-agent-gateway"]
+	path = local-agent-gateway
+	url = https://github.com/aka-gst/local-agent-gateway.git
+	branch = agent/local-gateway
+[submodule "Open-LLM-VTuber"]
+	path = Open-LLM-VTuber
+	url = https://github.com/aka-gst/Open-LLM-VTuber.git
+	branch = feat/local-agent-gateway

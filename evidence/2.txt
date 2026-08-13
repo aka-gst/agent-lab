@@ -1,0 +1,150 @@
+# Независимый read-only аудит Open-LLM-VTuber
+
+Аудит выполнен только по текущим локальным исходникам и документации. `.env`, `conf.yaml`, секреты, `.git`, `.venv`, `node_modules`, `evidence`, старые отчёты и результаты экспериментов не читались. Сервер и приложение не запускались, зависимости не устанавливались.
+
+## 1. Архитектурная карта
+
+### Серверная точка входа
+
+Штатная точка входа — `run_server.py`: она импортирует `WebSocketServer` и конфигурационный слой (`run_server.py:13-14`), разбирает `--verbose` и `--hf_mirror` (`run_server.py:110-116`), а затем вызывает `run()` (`run_server.py:167-178`).
+
+Сервер реализован как FastAPI-приложение в `src/open_llm_vtuber/server.py` (`server.py:56-79`).
+
+### Порядок инициализации
+
+1. Настраиваются консольный и файловый логгеры (`run_server.py:28-47`).
+2. Проверяется наличие `frontend/index.html`; при отсутствии код пытается выполнить `git submodule update --init --recursive` (`run_server.py:50-70`).
+3. Вызывается синхронизация пользовательского конфига (`run_server.py:127-134`).
+4. Регистрируется очистка `cache` при выходе (`run_server.py:136`).
+5. Читается и валидируется корневой `conf.yaml` (`run_server.py:138-140`).
+6. Создаётся `WebSocketServer` (`run_server.py:145-146`).
+7. `server.initialize()` загружает общий `ServiceContext` (`run_server.py:148-155`; `server.py:151-154`).
+8. Внутри контекста последовательно создаются Live2D, ASR, TTS, VAD, MCP, Agent/LLM и переводчик (`service_context.py:268-307`).
+9. После успешной инициализации запускается Uvicorn (`run_server.py:157-164`).
+
+### Конфигурационный слой
+
+Главная Pydantic-модель `Config` объединяет `SystemConfig`, `CharacterConfig` и `LiveConfig` (`src/open_llm_vtuber/config_manager/main.py:5-18`).
+
+`CharacterConfig` связывает Live2D, persona, Agent/LLM, ASR, TTS, VAD и TTS preprocessor (`config_manager/character.py:13-29`). YAML читается через `yaml.safe_load`, с подстановкой `${ENV_VAR}` (`config_manager/utils.py:16-49`), затем валидируется моделью `Config` (`config_manager/utils.py:55-74`).
+
+### LLM, ASR и TTS
+
+LLM включён через агентный слой: тип агента и набор LLM-конфигураций задаёт `AgentConfig` (`config_manager/agent.py:199-206`); `AgentFactory` выбирает агент и LLM (`agent/agent_factory.py:39-61`); `LLMFactory` поддерживает OpenAI-compatible, Ollama, llama.cpp и Claude (`agent/stateless_llm_factory.py:25-78`).
+
+ASR выбирается `ASRFactory`; подтверждены Faster Whisper, Whisper.cpp, Whisper, FunASR, Azure, Groq Whisper и sherpa-onnx (`asr/asr_factory.py:5-62`).
+
+TTS выбирается `TTSFactory`: Azure, Bark, Edge, pyttsx3, CosyVoice, Melo, GPT-SoVITS, Fish, sherpa-onnx, OpenAI-compatible, Piper и другие (`tts/tts_factory.py:5-29`, `tts/tts_factory.py:30-137`, `tts/tts_factory.py:201-215`).
+
+Дефолтный шаблон выбирает `ollama_llm` (`conf.default.yaml:49-69`), `sherpa_onnx_asr` (`conf.default.yaml:173-176`), `edge_tts` (`conf.default.yaml:273-295`); VAD отключён (`conf.default.yaml:456-458`).
+
+### Live2D и frontend
+
+`Live2dModel` читает `model_dict.json`, выбирает модель по имени и строит emotion map (`live2d_model.py:28-51`, `live2d_model.py:103-138`).
+
+Сервер публикует `/live2d-models`, `/bg`, `/avatars`, `/web-tool` и основной frontend на `/` (`server.py:120-149`). Frontend является Git submodule ветки `build` (`.gitmodules:1-4`). WebSocket клиента зарегистрирован на `/client-ws` (`routes.py:15-45`); ASR и TTS endpoints — `/asr` и `/tts-ws` (`routes.py:141-182`, `routes.py:201-252`).
+
+### Тесты и вспомогательные инструменты
+
+Документированы Ruff, pre-commit, GitHub Actions и ручное тестирование (`CLAUDE.md:17-20`, `CLAUDE.md:142-148`; `pyproject.toml:63-68`). Наличие отдельного автоматизированного unit/integration test suite не доказано.
+
+Вспомогательные подсистемы: MCP (`service_context.py:15-25`), web recorder/tool (`server.py:137-142`), Bilibili launcher (`pyproject.toml:66-68`), upgrade/config synchronizer (`run_server.py:11`, `upgrade_codes/config_sync.py:36-50`).
+
+### Связи компонентов
+
+run_server.py → read_yaml/Pydantic Config → WebSocketServer/FastAPI → routes/WebSocketHandler → ServiceContext → Live2D, ASRFactory, TTSFactory, VADFactory, MCP, AgentFactory/LLMFactory, TranslateFactory → frontend и статические ресурсы.
+
+Связи подтверждены `server.py:17-19`, `server.py:91-109`, `service_context.py:268-307`.
+
+## 2. Команды запуска
+
+- Штатный запуск: `uv run run_server.py` (`CLAUDE.md:11-14`).
+- Verbose-запуск: `uv run run_server.py --verbose` (`CLAUDE.md:14`; `run_server.py:110-116`, `run_server.py:167-175`).
+- Установка/синхронизация: `uv sync` (`CLAUDE.md:11-13`).
+
+Корневой README и локальный `doc/README.md` содержат только ссылки на внешнюю quick-start документацию (`README.md:100-102`; `doc/README.md:1-4`). Полнота команд относительно внешнего quick-start — NOT PROVEN.
+
+## 3. Конфигурация
+
+- Пользовательский файл: корневой `conf.yaml` (`CLAUDE.md:22-25`; `run_server.py:138-140`).
+- Шаблоны: `config_templates/conf.default.yaml` и `config_templates/conf.ZH.default.yaml` (`CLAUDE.md:23-25`).
+- При отсутствии пользовательского файла шаблон копируется в `conf.yaml` (`config_templates/README.md:2-6`; `upgrade_codes/config_sync.py:36-47`).
+- Pydantic-схемы: `src/open_llm_vtuber/config_manager/` (`main.py:5-18`; `character.py:5-10`).
+- Альтернативные character configs: каталог `system_config.config_alts_dir`, по умолчанию `characters` (`conf.default.yaml:2-7`; `service_context.py:488-515`).
+
+Не должны публиковаться: `conf.yaml`, `.env`, `api_keys.py`, `user_credentials.json`, `conf.yaml.backup`, `mcp_servers.json`, chat history, memory/database, пользовательские avatars/models/backgrounds/Live2D/characters (`.gitignore:1-19`, `.gitignore:35-70`, `.gitignore:74-76`). Секретны также API/LLM keys, translation secrets и Bilibili sessdata (`conf.default.yaml:178-180`, `conf.default.yaml:491-492`, `conf.default.yaml:498-503`).
+
+## 4. Три главных риска baseline на Windows
+
+### Риск 1 — несовместимая версия Python
+
+- Категория: environment.
+- Доказательство: Python `>=3.10,<3.13` (`pyproject.toml:6`).
+- Read-only проверка: `python --version`; `uv --version`.
+- Устранение: использовать Python 3.10–3.12 и штатный `uv sync`, не меняя dependency-файлы.
+- Не доказано: фактические версии Python и uv в текущей среде.
+
+### Риск 2 — конфигурация зависит от внешних сервисов и моделей
+
+- Категория: configuration.
+- Доказательство: default выбирает Ollama (`conf.default.yaml:61`), MCP `time`/`ddg-search` (`conf.default.yaml:67-70`), sherpa-onnx ASR (`conf.default.yaml:173-176`) и Edge TTS (`conf.default.yaml:273-295`). Инициализация происходит до Uvicorn (`service_context.py:268-303`; `run_server.py:148-164`).
+- Read-only проверка: `Test-Path conf.yaml`; `Test-Path models`; `Get-Command ollama -ErrorAction SilentlyContinue`.
+- Устранение: создать локальный `conf.yaml` из шаблона, выбрать доступные backend/model/API и хранить секреты локально.
+- Не доказано: содержимое `conf.yaml`, наличие Ollama, моделей, сети и credentials.
+
+### Риск 3 — frontend/submodule и startup имеют изменяющие действия
+
+- Категория: source.
+- Доказательство: frontend — submodule (`.gitmodules:1-4`); при его отсутствии startup выполняет `git submodule update --init --recursive` (`run_server.py:50-70`), синхронизирует/копирует/резервирует `conf.yaml` (`run_server.py:127-134`; `config_sync.py:36-50`, `config_sync.py:98-106`) и создаёт лог (`run_server.py:38-47`).
+- Read-only проверка: `Test-Path frontend/index.html`; `Test-Path conf.yaml`; `git submodule status`.
+- Устранение: заранее инициализировать upstream submodule и подготовить локальный config; frontend вручную не менять.
+- Не доказано: доступность GitHub, закреплённый submodule commit и работоспособность Git на Windows.
+
+Дополнительный фактор: `torch>=2.6.0` вне macOS (`pyproject.toml:35-37`) плюс ONNX/sherpa (`pyproject.toml:20-33`). Совместимость конкретного CPU/GPU, драйвера и Windows wheel не доказана.
+
+## 5. Файлы, которые нельзя менять при baseline-воспроизведении
+
+### Source code
+
+`run_server.py`, `src/open_llm_vtuber/**`, `prompts/**`, `upgrade.py`, `upgrade_codes/**`, `scripts/**`, `web_tool/**` (`CLAUDE.md:109-140`).
+
+### Templates
+
+`config_templates/conf.default.yaml`, `config_templates/conf.ZH.default.yaml`; прямой запрет менять вне contribution — `config_templates/README.md:4-6`.
+
+### Dependency и lock-файлы
+
+`pyproject.toml`, `uv.lock`, `pixi.lock`, `requirements.txt`, `requirements-bilibili.txt`, `.pre-commit-config.yaml` (`CLAUDE.md:150-156`).
+
+### Frontend/submodule
+
+`frontend/**`, `.gitmodules` (`CLAUDE.md:114-116`; `.gitmodules:1-4`; `run_server.py:93-98`).
+
+### Локальные конфигурации и секреты
+
+`conf.yaml`, `conf.yaml.backup`, `.env`, `api_keys.py`, `user_credentials.json`, `mcp_servers.json`, пользовательские models/avatars/characters/backgrounds/Live2D, базы, память и chat history (`.gitignore:1-19`, `.gitignore:35-76`).
+
+## 6. Итоговая таблица
+
+Утверждение | Локальное доказательство | Статус | Команда повторной проверки
+--- | --- | --- | ---
+Entry point — run_server.py | CLAUDE.md:109-113; run_server.py:167-178 | PASS | rg -n "if __name__|WebSocketServer" run_server.py
+Сервер — FastAPI/WebSocket | server.py:56-79; routes.py:15-45 | PASS | rg -n "FastAPI|client-ws" src/open_llm_vtuber/server.py src/open_llm_vtuber/routes.py
+Конфиг читается из conf.yaml | run_server.py:138-140 | PASS | rg -n 'read_yaml\("conf.yaml"\)' run_server.py
+Схемы основаны на Pydantic | config_manager/main.py:2-18; i18n.py:79-86 | PASS | rg -n "BaseModel|class Config" src/open_llm_vtuber/config_manager/*.py
+Движки создаются фабриками | service_context.py:268-305, 323-394 | PASS | rg -n "Factory|get_.*engine|create_agent" src/open_llm_vtuber/service_context.py
+Frontend — Git submodule | .gitmodules:1-4 | PASS | Get-Content .gitmodules
+Штатный запуск подтверждён | CLAUDE.md:11-14 | PASS | rg -n "uv run run_server.py" CLAUDE.md
+Verbose подтверждён | run_server.py:110-116, 167-175 | PASS | rg -n -- "--verbose" run_server.py CLAUDE.md
+uv sync подтверждён | CLAUDE.md:11-13 | PASS | rg -n "uv sync" CLAUDE.md
+Python 3.10–3.12 | pyproject.toml:6 | PASS | rg -n "requires-python" pyproject.toml
+Полный локальный quick-start | README.md:100-102; doc/README.md:1-4 содержат ссылки | NOT PROVEN | rg -n "Quick Start|documentation site" README.md doc/README.md
+Unit/integration suite присутствует | документировано ручное тестирование, CLAUDE.md:142-148 | NOT PROVEN | rg --files -uu | rg '(^|/)(tests?|test_)'
+Windows-среда совместима | ограничения pyproject.toml:6, 35-37; среда не запускалась | NOT PROVEN | python --version; uv --version
+Default backend доступен | conf.default.yaml:61, 173-176, 273-295 | NOT PROVEN | Get-Command ollama -ErrorAction SilentlyContinue; Test-Path models
+
+## Финальный git status --short
+
+Реальный вывод команды был пустым.
+
+Рабочее дерево чистое. Изменений и новых файлов в ходе аудита произведено не было.
