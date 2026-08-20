@@ -1,5 +1,7 @@
 # Local AI Agent Integration Lab
 
+![Local AI Agent Gateway cover](docs/images/local-ai-gateway-cover.png)
+
 A reproducible engineering case study: evaluate local and hosted language
 models, connect a voice AI client to a loopback-only gateway, and verify the
 result with security checks, automated tests, benchmarks, and operator
